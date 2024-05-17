@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/ms-cuentas/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-cuentas/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-cuentas/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-personas/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-personas/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-personas/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-tarjetas/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-tarjetas/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/ms-tarjetas/src/test/java" isTestSource="true" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="SonarLintModuleSettings">
+    <option name="uniqueId" value="eb250d0f-8ee4-494b-96d4-fb09430c93c2" />
+  </component>
+</module>
