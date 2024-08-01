@@ -1,12 +1,92 @@
 version: '3.8'
 
 services:
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+
+  kafka:
+    image: wurstmeister/kafka:2.13-2.7.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    depends_on:
+      - zookeeper
   node_app:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
     build: ./otros/servicio/.
     ports:
       - "3000:3000"
 
+  ms-cuentas:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    build:
+      context: ./ms-cuentas
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - red-mariadb
+    depends_on:
+      - mariadb
+      - kafka
+
+  ms-personas:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    build:
+      context: ./ms-personas
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - red-mariadb
+    depends_on:
+      - mariadb
+      - kafka
+
+  ms-tarjetas:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    build:
+      context: ./ms-tarjetas
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - red-mariadb
+    depends_on:
+      - mariadb
+      - kafka
+
   mariadb:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
     image: mariadb
     command: --default-authentication-plugin=ey%2024#database
     restart: always
@@ -17,11 +97,17 @@ services:
       MYSQL_PASSWORD: passwordey1234
     ports:
       - "3310:3306"
+    networks:
+      - red-mariadb
     volumes:
       - ./volumenes/mariadb_data:/var/lib/mysql
       - ./volumenes/initDB.sql:/docker-entrypoint-initdb.d/1.sql  # Montar el directorio con los archivos SQL
 
   mongodb:
+    deploy:
+      resources:
+        limits:
+          memory: 500m
     image: mongo:latest
     container_name: mongodb
     restart: always
@@ -30,10 +116,16 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: passwordey1234
       MONGO_INITDB_DATABASE: root-db
     ports:
-        - 27017:27017
+      - "27017:27017"
+    networks:
+      - red-mariadb
     volumes:
-        - ./volumenes/mongodb_data:/data/db       
-        - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./volumenes/mongodb_data:/data/db
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+networks:
+  red-mariadb:
+
 volumes:
   mariadb_data:
   mongodb_data:
