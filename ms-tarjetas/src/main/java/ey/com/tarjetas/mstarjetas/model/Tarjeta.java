@@ -1,9 +1,6 @@
 package ey.com.tarjetas.mstarjetas.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,8 +29,9 @@ public class Tarjeta implements Serializable {
     @Column(name = "pin")
     private Integer pin;
 
-    @Column(name = "estado")
-    private Integer estado;
+    @OneToOne
+    @JoinColumn(name = "fk_estado")
+    private EstadoTarjeta estado;
 
     @Column(name = "f_emision")
     private String fEmision;

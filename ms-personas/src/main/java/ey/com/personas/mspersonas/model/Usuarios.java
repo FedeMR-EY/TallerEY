@@ -30,9 +30,11 @@ public class Usuarios implements Serializable {
     @Column(name = "dni")
     private String dni;
 
-    @Column(name = "estado")
-    private Integer estado;
+    @OneToOne
+    @JoinColumn(name = "fk_estado_usuario")
+    private EstadoUsuario estado;
 
-    @Column(name = "tipo")
-    private Integer tipo;
+    @OneToOne
+    @JoinColumn(name = "fk_tipo_usuario")
+    private TipoUsuario tipo;
 }
