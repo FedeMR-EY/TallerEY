@@ -30,7 +30,7 @@ public class Tarjeta implements Serializable {
     private Integer pin;
 
     @OneToOne
-    @JoinColumn(name = "fk_estado")
+    @JoinColumn(name = "estado", referencedColumnName = "id")
     private EstadoTarjeta estado;
 
     @Column(name = "f_emision")

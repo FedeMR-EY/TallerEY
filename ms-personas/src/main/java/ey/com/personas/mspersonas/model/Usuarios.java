@@ -31,10 +31,10 @@ public class Usuarios implements Serializable {
     private String dni;
 
     @OneToOne
-    @JoinColumn(name = "fk_estado_usuario")
+    @JoinColumn(name = "estado",referencedColumnName = "idestado_usuario")
     private EstadoUsuario estado;
 
     @OneToOne
-    @JoinColumn(name = "fk_tipo_usuario")
+    @JoinColumn(name = "tipo",referencedColumnName = "idtipo_usuario")
     private TipoUsuario tipo;
 }

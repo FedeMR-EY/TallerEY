@@ -18,4 +18,6 @@ import java.io.Serializable;
 public class RegistrarPersonaResponse implements Serializable {
     @Serial
     private static final long serialVersionUID = 2622396990945323186L;
+
+    private String message;
 }

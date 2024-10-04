@@ -23,11 +23,11 @@ public class Cuentas implements Serializable {
     private Integer persnum;
 
     @OneToOne
-    @JoinColumn(name = "fk_codigomoneda")
+    @JoinColumn(name = "divisa", referencedColumnName = "cod_moneda")
     private CodigoMoneda divisa;
 
     @OneToOne
-    @JoinColumn(name = "fk_estado")
+    @JoinColumn(name = "estado", referencedColumnName = "id")
     private EstadoCuenta estado;
 
     @Column(name = "saldo")

@@ -9,6 +9,8 @@ services:
       resources:
         limits:
           memory: 500m
+    networks:
+      - red-kafka
 
   kafka:
     image: wurstmeister/kafka:2.13-2.7.0
@@ -16,7 +18,7 @@ services:
       - "9092:9092"
     environment:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -26,6 +28,9 @@ services:
           memory: 500m
     depends_on:
       - zookeeper
+    networks:
+      - red-kafka
+
   node_app:
     deploy:
       resources:
@@ -34,6 +39,11 @@ services:
     build: ./otros/servicio/.
     ports:
       - "3000:3000"
+    networks:
+      - red-mariadb
+      - red-kafka
+    depends_on:
+      - mariadb
 
   ms-cuentas:
     deploy:
@@ -47,6 +57,7 @@ services:
       - "8080:8080"
     networks:
       - red-mariadb
+      - red-kafka
     depends_on:
       - mariadb
       - kafka
@@ -63,6 +74,7 @@ services:
       - "8081:8081"
     networks:
       - red-mariadb
+      - red-kafka
     depends_on:
       - mariadb
       - kafka
@@ -79,6 +91,7 @@ services:
       - "8082:8082"
     networks:
       - red-mariadb
+      - red-kafka
     depends_on:
       - mariadb
       - kafka
@@ -126,6 +139,7 @@ services:
 
 networks:
   red-mariadb:
+  red-kafka:
 
 volumes:
   mariadb_data:
