@@ -35,6 +35,7 @@ public class TarjetasBusinessService {
           estadoTarjeta.setDetalle("Activa");
 
           tarjeta.setPin(new Random().nextInt(9999));
+          tarjeta.setNumcuenta(new Random().nextInt(999999));
           tarjeta.setTipo("C");
           tarjeta.setNumtarj(String.valueOf(new Random().nextInt(99999999)));
           tarjeta.setFEmision(new Date().toString());

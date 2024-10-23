@@ -19,7 +19,6 @@ public class Tarjeta implements Serializable {
   private String numtarj;
 
   @Column(name = "numcue")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer numcuenta;
 
   @Column(name = "f_vencimiento")
