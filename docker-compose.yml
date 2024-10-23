@@ -8,7 +8,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     networks:
       - red-kafka
 
@@ -25,7 +26,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     depends_on:
       - zookeeper
     networks:
@@ -35,7 +37,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     build: ./otros/servicio/.
     ports:
       - "3000:3000"
@@ -49,7 +52,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     build:
       context: ./ms-cuentas
       dockerfile: Dockerfile
@@ -66,7 +70,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     build:
       context: ./ms-personas
       dockerfile: Dockerfile
@@ -83,7 +88,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     build:
       context: ./ms-tarjetas
       dockerfile: Dockerfile
@@ -100,7 +106,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     image: mariadb
     command: --default-authentication-plugin=ey%2024#database
     restart: always
@@ -121,7 +128,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500m
+          memory: 256m
+          cpus: '0.20'
     image: mongo:latest
     container_name: mongodb
     restart: always

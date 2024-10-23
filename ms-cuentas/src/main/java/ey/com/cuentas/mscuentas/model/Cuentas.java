@@ -1,35 +1,34 @@
 package ey.com.cuentas.mscuentas.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "cuentas")
 @Getter
 @Setter
 public class Cuentas implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 4939453752090296073L;
-    @Id
-    @Column(name = "numcue")
-    private String numcuenta;
+  @Serial private static final long serialVersionUID = 4939453752090296073L;
 
-    @Column(name = "persnum")
-    private Integer persnum;
+  @Id
+  @Column(name = "numcue")
+  private String numcuenta;
 
-    @OneToOne
-    @JoinColumn(name = "divisa", referencedColumnName = "cod_moneda")
-    private CodigoMoneda divisa;
+  @Column(name = "persnum")
+  private Integer persnum;
 
-    @OneToOne
-    @JoinColumn(name = "estado", referencedColumnName = "id")
-    private EstadoCuenta estado;
+  @OneToOne
+  @JoinColumn(name = "divisa", referencedColumnName = "cod_moneda")
+  private CodigoMoneda divisa;
 
-    @Column(name = "saldo")
-    private BigDecimal saldo;
+  @OneToOne
+  @JoinColumn(name = "estado", referencedColumnName = "id")
+  private EstadoCuenta estado;
+
+  @Column(name = "saldo")
+  private BigDecimal saldo;
 }

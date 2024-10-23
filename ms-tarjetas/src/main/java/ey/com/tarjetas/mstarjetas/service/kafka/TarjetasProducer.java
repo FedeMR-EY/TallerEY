@@ -7,13 +7,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TarjetasProducer {
-    private static final String TOPIC = "ms-tarjetas-to-ms-personas";
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-    @Autowired
-    public TarjetasProducer(@Qualifier("kafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
-    public void sendMessage(Object message) {
-        kafkaTemplate.send(TOPIC, message);
-    }
+  private static final String TOPIC = "ms-tarjetas-to-ms-personas";
+  private final KafkaTemplate<String, Object> kafkaTemplate;
+
+  @Autowired
+  public TarjetasProducer(@Qualifier("kafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
+    this.kafkaTemplate = kafkaTemplate;
+  }
+
+  public void sendMessage(Object message) {
+    kafkaTemplate.send(TOPIC, message);
+  }
 }

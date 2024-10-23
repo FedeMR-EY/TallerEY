@@ -5,5 +5,4 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("v1/taller_ey")
-public class TarjetasController {
-}
+public class TarjetasController {}
