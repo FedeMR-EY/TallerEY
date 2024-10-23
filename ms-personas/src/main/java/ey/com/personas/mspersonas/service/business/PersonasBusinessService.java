@@ -12,18 +12,17 @@ import ey.com.personas.mspersonas.service.UsuariosService;
 import ey.com.personas.mspersonas.service.connectors.NodeAppHttpClient;
 import ey.com.personas.mspersonas.service.kafka.PersonasProducer;
 import ey.com.personas.mspersonas.shared.enumeration.AccountTypes;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
-
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
@@ -32,11 +31,13 @@ public class PersonasBusinessService {
   private final NodeAppHttpClient nodeAppHttpClient;
   private final PersonasProducer personasProducer;
   private final ConcurrentHashMap<UUID, CompletableFuture<Boolean>> pendingResponses;
+
   @Autowired
   public PersonasBusinessService(
-          UsuariosService usuariosService,
-          NodeAppHttpClient nodeAppHttpClient,
-          PersonasProducer personasProducer, ConcurrentHashMap<UUID, CompletableFuture<Boolean>> pendingResponses) {
+      UsuariosService usuariosService,
+      NodeAppHttpClient nodeAppHttpClient,
+      PersonasProducer personasProducer,
+      ConcurrentHashMap<UUID, CompletableFuture<Boolean>> pendingResponses) {
     this.usuariosService = usuariosService;
     this.nodeAppHttpClient = nodeAppHttpClient;
     this.personasProducer = personasProducer;
@@ -103,7 +104,8 @@ public class PersonasBusinessService {
 
       var personNumber = (Integer) usuariosService.save(newUser);
 
-      var createAccountMessage = new CreateAccountMessage(accType, request, UUID.randomUUID(), personNumber);
+      var createAccountMessage =
+          new CreateAccountMessage(accType, request, UUID.randomUUID(), personNumber);
       var createCardMessage = new CreateCardMessage(accType, UUID.randomUUID());
 
       var cuentasFuture = new CompletableFuture<Boolean>();
@@ -113,7 +115,7 @@ public class PersonasBusinessService {
       pendingResponses.put(createCardMessage.uuid(), tarjetasFuture);
 
       personasProducer.sendMessageToMsCuentas(createAccountMessage);
-      if(accType != AccountTypes.BASIC){
+      if (accType != AccountTypes.BASIC) {
         personasProducer.sendMessageToMsTarjetas(createCardMessage);
       }
 
@@ -121,7 +123,7 @@ public class PersonasBusinessService {
       var cuentasResult = cuentasFuture.get(35, TimeUnit.SECONDS);
       var tarjetasResult = tarjetasFuture.get(35, TimeUnit.SECONDS);
 
-      if (!cuentasResult && !tarjetasResult){
+      if (!cuentasResult && !tarjetasResult) {
         throw new ConflictException();
       }
 
@@ -131,26 +133,29 @@ public class PersonasBusinessService {
       log.error("Faltan parámetros: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(
           new RegistrarPersonaResponse("Faltan parámetros"), HttpStatus.BAD_REQUEST);
-    } catch (ConflictException e){
+    } catch (ConflictException e) {
       usuariosService.deleteByDni(request.dni());
-      log.error("Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas: {}", (Object) e.getStackTrace());
+      log.error(
+          "Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas: {}",
+          (Object) e.getStackTrace());
       return new ResponseEntity<>(
-              new RegistrarPersonaResponse("Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas."),
-              HttpStatus.INTERNAL_SERVER_ERROR);
+          new RegistrarPersonaResponse(
+              "Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas."),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (TimeoutException e) {
       usuariosService.deleteByDni(request.dni());
       log.error("Timeout esperando las respuestas de Kafka: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(
-              new RegistrarPersonaResponse("Timeout al crear la(s) cuenta(s) o tarjeta(s)"),
-              HttpStatus.INTERNAL_SERVER_ERROR);
-    }catch (InterruptedException e) {
+          new RegistrarPersonaResponse("Timeout al crear la(s) cuenta(s) o tarjeta(s)"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (InterruptedException e) {
       usuariosService.deleteByDni(request.dni());
       Thread.currentThread().interrupt();
       log.error("Ocurrió un error inesperado: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(
-              new RegistrarPersonaResponse("Ocurrió un error inesperado"),
-              HttpStatus.INTERNAL_SERVER_ERROR);
-    }catch (Exception e) {
+          new RegistrarPersonaResponse("Ocurrió un error inesperado"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (Exception e) {
       usuariosService.deleteByDni(request.dni());
       log.error("Ocurrió un error inesperado: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(

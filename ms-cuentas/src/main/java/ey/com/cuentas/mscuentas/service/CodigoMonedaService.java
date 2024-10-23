@@ -4,7 +4,6 @@ import ey.com.cuentas.mscuentas.model.CodigoMoneda;
 import ey.com.cuentas.mscuentas.repository.CodigoMonedaRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,9 @@ public class CodigoMonedaService implements JpaService<Object> {
 
   @Override
   public Object findById(Object id) {
-    return codigoMonedaRepository.findById((Integer) id).orElseThrow(() -> new NoSuchElementException("No se encontró la moneda con codigo: "+(id)));
+    return codigoMonedaRepository
+        .findById((Integer) id)
+        .orElseThrow(
+            () -> new NoSuchElementException("No se encontró la moneda con codigo: " + (id)));
   }
 }

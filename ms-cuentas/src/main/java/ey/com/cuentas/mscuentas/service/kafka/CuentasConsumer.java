@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 public class CuentasConsumer {
@@ -19,7 +17,8 @@ public class CuentasConsumer {
   private final CuentasBusinessService cuentasBusinessService;
 
   @Autowired
-  public CuentasConsumer(CuentasProducer cuentasProducer, CuentasBusinessService cuentasBusinessService) {
+  public CuentasConsumer(
+      CuentasProducer cuentasProducer, CuentasBusinessService cuentasBusinessService) {
     this.cuentasProducer = cuentasProducer;
     this.cuentasBusinessService = cuentasBusinessService;
   }
@@ -31,16 +30,17 @@ public class CuentasConsumer {
       var consumerRecord = (ConsumerRecord<String, String>) message;
 
       // Deserializa el valor directamente al record CreateAccountMessage
-      var createAccountMessage = objectMapper.readValue(consumerRecord.value(), CreateAccountMessage.class);
+      var createAccountMessage =
+          objectMapper.readValue(consumerRecord.value(), CreateAccountMessage.class);
 
       log.info("Cuenta a crear: {}", createAccountMessage);
 
       var response = cuentasBusinessService.createAcocunt(createAccountMessage);
 
-      if(response.get().created()){
+      if (response.get().created()) {
         log.info("Se creo exitosamente la cuenta.");
         cuentasProducer.sendMessage(response);
-      }else{
+      } else {
         log.info("Hubo un porblema al crear la cuenta.");
         cuentasProducer.sendMessage(response);
       }

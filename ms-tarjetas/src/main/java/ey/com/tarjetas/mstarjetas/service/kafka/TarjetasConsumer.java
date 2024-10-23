@@ -9,7 +9,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 @Slf4j
 @Service
@@ -19,24 +18,25 @@ public class TarjetasConsumer {
   private final TarjetasProducer tarjetasProducer;
 
   @Autowired
-  public TarjetasConsumer(TarjetasBusinessService tarjetasBusinessService, TarjetasProducer tarjetasProducer) {
+  public TarjetasConsumer(
+      TarjetasBusinessService tarjetasBusinessService, TarjetasProducer tarjetasProducer) {
     this.tarjetasBusinessService = tarjetasBusinessService;
     this.tarjetasProducer = tarjetasProducer;
   }
 
   @KafkaListener(topics = "ms-personas-to-ms-tarjetas", groupId = "group_id")
   public void consumeFromMsPersonas(Object message) throws JsonProcessingException {
-    var consumerRecord = (ConsumerRecord<String,String>) message;
+    var consumerRecord = (ConsumerRecord<String, String>) message;
     var createCardMessage = objectMapper.readValue(consumerRecord.value(), CreateCardMessage.class);
 
-    log.info("Tarjeta a crear: {}",createCardMessage);
+    log.info("Tarjeta a crear: {}", createCardMessage);
 
     var response = tarjetasBusinessService.createCard(createCardMessage);
 
-    if (response.get().created()){
+    if (response.get().created()) {
       log.info("Tarjeta creada exitosamente");
       tarjetasProducer.sendMessage(response);
-    }else {
+    } else {
       log.info("Hubo un problema al intentar crear la tarjeta");
       tarjetasProducer.sendMessage(response);
     }

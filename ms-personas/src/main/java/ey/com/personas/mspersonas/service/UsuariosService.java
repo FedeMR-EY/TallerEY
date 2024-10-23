@@ -34,7 +34,7 @@ public class UsuariosService implements JpaService<Object> {
     return usuariosRepository.findByDni(dni);
   }
 
-  public void deleteByDni(String dni){
+  public void deleteByDni(String dni) {
     usuariosRepository.deleteByDni(dni);
   }
 }

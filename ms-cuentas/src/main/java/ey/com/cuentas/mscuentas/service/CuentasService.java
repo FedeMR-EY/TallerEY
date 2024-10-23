@@ -4,7 +4,6 @@ import ey.com.cuentas.mscuentas.model.Cuentas;
 import ey.com.cuentas.mscuentas.repository.CuentasRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,9 @@ public class CuentasService implements JpaService<Object> {
 
   @Override
   public Object findById(Object id) {
-    return cuentasRepository.findById((String) id).orElseThrow(() -> new NoSuchElementException("No se enccontró la cuenta con id: "+((String) id)));
+    return cuentasRepository
+        .findById((String) id)
+        .orElseThrow(
+            () -> new NoSuchElementException("No se enccontró la cuenta con id: " + ((String) id)));
   }
 }

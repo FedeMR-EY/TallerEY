@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface UsuariosRepository extends JpaRepository<Usuarios, Integer> {
   Optional<Usuarios> findByDni(String dni);
 
-    void deleteByDni(String dni);
+  void deleteByDni(String dni);
 }

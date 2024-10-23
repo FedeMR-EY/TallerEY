@@ -5,52 +5,52 @@ import ey.com.tarjetas.mstarjetas.dto.CreateCardMessageResponse;
 import ey.com.tarjetas.mstarjetas.model.EstadoTarjeta;
 import ey.com.tarjetas.mstarjetas.model.Tarjeta;
 import ey.com.tarjetas.mstarjetas.service.TarjetaService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class TarjetasBusinessService {
-    private final TarjetaService tarjetaService;
-    @Autowired
-    public TarjetasBusinessService(TarjetaService tarjetaService) {
-        this.tarjetaService = tarjetaService;
-    }
+  private final TarjetaService tarjetaService;
 
-    public Optional<CreateCardMessageResponse> createCard(CreateCardMessage message){
+  @Autowired
+  public TarjetasBusinessService(TarjetaService tarjetaService) {
+    this.tarjetaService = tarjetaService;
+  }
 
-        try {
+  public Optional<CreateCardMessageResponse> createCard(CreateCardMessage message) {
 
-            switch (message.accountTypes()){
-                case BASIC_PLUS_CARD, PREMIUM_GOLD, PREMIUM_BLACK -> {
-                    var tarjeta = new Tarjeta();
-                    var estadoTarjeta = new EstadoTarjeta();
+    try {
 
-                    estadoTarjeta.setDetalle("Activa");
+      switch (message.accountTypes()) {
+        case BASIC_PLUS_CARD, PREMIUM_GOLD, PREMIUM_BLACK -> {
+          var tarjeta = new Tarjeta();
+          var estadoTarjeta = new EstadoTarjeta();
 
-                    tarjeta.setPin(new Random().nextInt(9999));
-                    tarjeta.setTipo("C");
-                    tarjeta.setNumtarj(String.valueOf(new Random().nextInt(99999999)));
-                    tarjeta.setFEmision(new Date().toString());
-                    tarjeta.setFVencimiento(LocalDate.now().plusYears(3).toString());
-                    tarjeta.setEstado(estadoTarjeta);
+          estadoTarjeta.setDetalle("Activa");
 
-                    tarjetaService.save(tarjeta);
+          tarjeta.setPin(new Random().nextInt(9999));
+          tarjeta.setTipo("C");
+          tarjeta.setNumtarj(String.valueOf(new Random().nextInt(99999999)));
+          tarjeta.setFEmision(new Date().toString());
+          tarjeta.setFVencimiento(LocalDate.now().plusYears(3).toString());
+          tarjeta.setEstado(estadoTarjeta);
 
-                    return Optional.of(new CreateCardMessageResponse(message.uuid(),true));
-                }
-            }
+          tarjetaService.save(tarjeta);
 
-        }catch (Exception e){
-            return Optional.of(new CreateCardMessageResponse(message.uuid(),false));
+          return Optional.of(new CreateCardMessageResponse(message.uuid(), true));
         }
+      }
 
-        return Optional.of(new CreateCardMessageResponse(message.uuid(),false));
+    } catch (Exception e) {
+      return Optional.of(new CreateCardMessageResponse(message.uuid(), false));
     }
+
+    return Optional.of(new CreateCardMessageResponse(message.uuid(), false));
+  }
 }

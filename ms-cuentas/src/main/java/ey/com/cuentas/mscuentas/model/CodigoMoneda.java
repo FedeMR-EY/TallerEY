@@ -1,7 +1,6 @@
 package ey.com.cuentas.mscuentas.model;
 
 import jakarta.persistence.*;
-
 import java.io.Serial;
 import java.io.Serializable;
 import lombok.Getter;
