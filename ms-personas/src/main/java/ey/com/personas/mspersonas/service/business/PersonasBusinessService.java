@@ -4,19 +4,25 @@ import ey.com.personas.mspersonas.dto.CreateAccountMessage;
 import ey.com.personas.mspersonas.dto.CreateCardMessage;
 import ey.com.personas.mspersonas.dto.RegistrarPersonaRequest;
 import ey.com.personas.mspersonas.dto.RegistrarPersonaResponse;
+import ey.com.personas.mspersonas.dto.api.renaper.RenaperResponse;
+import ey.com.personas.mspersonas.dto.api.veraz.VerazResponse;
+import ey.com.personas.mspersonas.dto.api.worldsys.WorldSysResponse;
 import ey.com.personas.mspersonas.exception.ConflictException;
+import ey.com.personas.mspersonas.model.Domicilio;
 import ey.com.personas.mspersonas.model.EstadoUsuario;
 import ey.com.personas.mspersonas.model.TipoUsuario;
 import ey.com.personas.mspersonas.model.Usuarios;
+import ey.com.personas.mspersonas.service.DomicilioService;
+import ey.com.personas.mspersonas.service.EstadoUsuarioService;
+import ey.com.personas.mspersonas.service.TipoUsuarioService;
 import ey.com.personas.mspersonas.service.UsuariosService;
 import ey.com.personas.mspersonas.service.connectors.NodeAppHttpClient;
 import ey.com.personas.mspersonas.service.kafka.PersonasProducer;
 import ey.com.personas.mspersonas.shared.enumeration.AccountTypes;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +34,9 @@ import org.springframework.validation.BindingResult;
 @Slf4j
 public class PersonasBusinessService {
   private final UsuariosService usuariosService;
+  private final TipoUsuarioService tipoUsuarioService;
+  private final EstadoUsuarioService estadoUsuarioService;
+  private final DomicilioService domicilioService;
   private final NodeAppHttpClient nodeAppHttpClient;
   private final PersonasProducer personasProducer;
   private final ConcurrentHashMap<UUID, CompletableFuture<Boolean>> pendingResponses;
@@ -35,10 +44,16 @@ public class PersonasBusinessService {
   @Autowired
   public PersonasBusinessService(
       UsuariosService usuariosService,
+      TipoUsuarioService tipoUsuarioService,
+      EstadoUsuarioService estadoUsuarioService,
+      DomicilioService domicilioService,
       NodeAppHttpClient nodeAppHttpClient,
       PersonasProducer personasProducer,
       ConcurrentHashMap<UUID, CompletableFuture<Boolean>> pendingResponses) {
     this.usuariosService = usuariosService;
+    this.tipoUsuarioService = tipoUsuarioService;
+    this.estadoUsuarioService = estadoUsuarioService;
+    this.domicilioService = domicilioService;
     this.nodeAppHttpClient = nodeAppHttpClient;
     this.personasProducer = personasProducer;
     this.pendingResponses = pendingResponses;
@@ -65,9 +80,19 @@ public class PersonasBusinessService {
         }
       }
 
-      var verazResponse = nodeAppHttpClient.getVerazDetails(request.dni());
-      var renaperResponse = nodeAppHttpClient.getRenaperDetails(request.dni());
-      var worldSysResponse = nodeAppHttpClient.getWorldSysDetails(request.dni());
+      CompletableFuture<VerazResponse> verazFuture =
+          nodeAppHttpClient.getVerazDetails(request.dni());
+      CompletableFuture<RenaperResponse> renaperFuture =
+          nodeAppHttpClient.getRenaperDetails(request.dni());
+      CompletableFuture<WorldSysResponse> worldSysFuture =
+          nodeAppHttpClient.getWorldSysDetails(request.dni());
+
+      // Esperar a que todas las respuestas asíncronas se completen
+      CompletableFuture.allOf(verazFuture, renaperFuture, worldSysFuture).join();
+
+      VerazResponse verazResponse = verazFuture.get();
+      RenaperResponse renaperResponse = renaperFuture.get();
+      WorldSysResponse worldSysResponse = worldSysFuture.get();
 
       if (verazResponse == null || renaperResponse == null || worldSysResponse == null) {
         return new ResponseEntity<>(
@@ -89,20 +114,25 @@ public class PersonasBusinessService {
       }
 
       var newUser = new Usuarios();
-      var tipoUsuario = new TipoUsuario();
-      var estadoUsuario = new EstadoUsuario();
-
-      estadoUsuario.setDescripcion("Activo");
-
-      tipoUsuario.setDescripcion("Cliente");
+      var tipoUsuario = (Optional<TipoUsuario>) tipoUsuarioService.findById(1);
+      var estadoUsuario = (Optional<EstadoUsuario>) estadoUsuarioService.findById(1);
+      var domicilio = new Domicilio();
 
       newUser.setNombre(request.nombre());
       newUser.setApellido(request.apellido());
       newUser.setDni(request.dni());
-      newUser.setTipo(tipoUsuario);
-      newUser.setEstado(estadoUsuario);
+      newUser.setTipo(tipoUsuario.get());
+      newUser.setEstado(estadoUsuario.get());
 
       var personNumber = (Integer) usuariosService.save(newUser);
+
+      domicilio.setCalle(request.calle());
+      domicilio.setPersnum(personNumber);
+      domicilio.setProvincia(request.provincia());
+      domicilio.setLocalidad(request.localidad());
+      domicilio.setNumero(request.numero());
+
+      domicilioService.save(domicilio);
 
       var createAccountMessage =
           new CreateAccountMessage(accType, request, UUID.randomUUID(), personNumber);
@@ -115,26 +145,46 @@ public class PersonasBusinessService {
       pendingResponses.put(createCardMessage.uuid(), tarjetasFuture);
 
       personasProducer.sendMessageToMsCuentas(createAccountMessage);
+
+      // Se envía el mensaje para crear la tarjeta solo si el tipo de cuenta lo permite
       if (accType != AccountTypes.BASIC) {
         personasProducer.sendMessageToMsTarjetas(createCardMessage);
       }
 
-      // Esperar las respuestas
-      var cuentasResult = cuentasFuture.get(35, TimeUnit.SECONDS);
-      var tarjetasResult = tarjetasFuture.get(35, TimeUnit.SECONDS);
+      // Acciones asíncronas para cuando lleguen las respuestas
+      cuentasFuture.thenAccept(
+          cuentasResult -> {
+            if (!cuentasResult) {
+              // Manejar error en la creación de cuenta
+              log.error("Error creando la cuenta para UUID: " + createAccountMessage.uuid());
+              throw new ConflictException("Hubo un error al crear la cuenta");
+            } else {
+              log.info(
+                  "Cuenta creada exitosamente para persona con UUID: "
+                      + createAccountMessage.uuid());
+            }
+          });
 
-      if (!cuentasResult && !tarjetasResult) {
-        throw new ConflictException();
-      }
+      tarjetasFuture.thenAccept(
+          tarjetasResult -> {
+            if (accType != AccountTypes.BASIC && !tarjetasResult) {
+              // Manejar error en la creación de tarjeta
+              log.error("Error creando la tarjeta para UUID: " + createCardMessage.uuid());
+              throw new ConflictException("Hubo un error al crear la tarjeta");
+            } else {
+              log.info(
+                  "Tarjeta creada exitosamente para persona con UUID: " + createCardMessage.uuid());
+            }
+          });
 
       return new ResponseEntity<>(
-          new RegistrarPersonaResponse("Se creó la cuenta correctamente"), HttpStatus.OK);
+          new RegistrarPersonaResponse("Se inició el proceso de creación de cuenta y tarjeta"),
+          HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       log.error("Faltan parámetros: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(
           new RegistrarPersonaResponse("Faltan parámetros"), HttpStatus.BAD_REQUEST);
     } catch (ConflictException e) {
-      usuariosService.deleteByDni(request.dni());
       log.error(
           "Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas: {}",
           (Object) e.getStackTrace());
@@ -142,21 +192,7 @@ public class PersonasBusinessService {
           new RegistrarPersonaResponse(
               "Algo salió mal crear la(s) cuenta(s) o tarjeta(s) asociadas."),
           HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (TimeoutException e) {
-      usuariosService.deleteByDni(request.dni());
-      log.error("Timeout esperando las respuestas de Kafka: {}", (Object) e.getStackTrace());
-      return new ResponseEntity<>(
-          new RegistrarPersonaResponse("Timeout al crear la(s) cuenta(s) o tarjeta(s)"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (InterruptedException e) {
-      usuariosService.deleteByDni(request.dni());
-      Thread.currentThread().interrupt();
-      log.error("Ocurrió un error inesperado: {}", (Object) e.getStackTrace());
-      return new ResponseEntity<>(
-          new RegistrarPersonaResponse("Ocurrió un error inesperado"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (Exception e) {
-      usuariosService.deleteByDni(request.dni());
       log.error("Ocurrió un error inesperado: {}", (Object) e.getStackTrace());
       return new ResponseEntity<>(
           new RegistrarPersonaResponse("Ocurrió un error inesperado"),

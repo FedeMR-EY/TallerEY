@@ -5,11 +5,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "codigo_moneda")
 @Getter
 @Setter
+@ToString
 public class CodigoMoneda implements Serializable {
 
   @Serial private static final long serialVersionUID = -7837209169737143728L;

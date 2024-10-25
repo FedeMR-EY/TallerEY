@@ -26,6 +26,6 @@ public class TipoUsuarioService implements JpaService<Object> {
 
   @Override
   public Object findById(Object id) {
-    return null;
+    return tipoUsuarioRepository.findById((Integer) id);
   }
 }

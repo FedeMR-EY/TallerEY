@@ -11,8 +11,8 @@ app.get('/service/worldsys', (req, res) => {
     {dni:12345674,isTerrotist:true},
     {dni:12345673,isTerrotist:false},
     {dni:12345672,isTerrotist:true},
-    {dni:123456789,isTerrotist:false}
-
+    {dni:123456789,isTerrotist:false},
+    {dni:1234567899,isTerrotist:false}
 
 ]
 
@@ -29,7 +29,8 @@ app.get('/service/veraz', (req, res) => {
         {dni:12345674,score:4},
         {dni:12345673,score:1.5},
         {dni:12345672,score:0.8},
-        {dni:123456789,score:0.1}]
+        {dni:123456789,score:0.1},
+        {dni:1234567899,score:0.1}]
     res.status(200).json({ response: data.filter(x=>x.dni==dni)})
 
 
@@ -45,7 +46,8 @@ app.get('/service/renaper', (req, res) => {
         {dni:12345674,isAuthorize:false},
         {dni:12345673,isAuthorize:false},
         {dni:12345672,isAuthorize:true},
-        {dni:123456789,isAuthorize:true}]
+        {dni:123456789,isAuthorize:true},
+        {dni:1234567899,isAuthorize:true}]
 
     res.status(200).json({ response: data.filter(x=>x.dni==dni) });
 });

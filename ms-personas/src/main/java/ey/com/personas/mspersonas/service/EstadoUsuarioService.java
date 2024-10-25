@@ -26,6 +26,6 @@ public class EstadoUsuarioService implements JpaService<Object> {
 
   @Override
   public Object findById(Object id) {
-    return null;
+    return estadoUsuarioRepository.findById((Integer) id);
   }
 }

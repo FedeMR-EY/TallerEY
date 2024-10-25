@@ -8,8 +8,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 512m
+          cpus: '0.30'
     networks:
       - red-kafka
 
@@ -26,8 +26,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 1g
+          cpus: '0.35'
     depends_on:
       - zookeeper
     networks:
@@ -37,8 +37,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 512m
+          cpus: '0.30'
     build: ./otros/servicio/.
     ports:
       - "3000:3000"
@@ -52,8 +52,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 1g
+          cpus: '0.30'
     build:
       context: ./ms-cuentas
       dockerfile: Dockerfile
@@ -70,8 +70,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 1g
+          cpus: '0.30'
     build:
       context: ./ms-personas
       dockerfile: Dockerfile
@@ -88,8 +88,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 1g
+          cpus: '0.30'
     build:
       context: ./ms-tarjetas
       dockerfile: Dockerfile
@@ -106,8 +106,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 1g
+          cpus: '0.30'
     image: mariadb
     command: --default-authentication-plugin=ey%2024#database
     restart: always
@@ -128,8 +128,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
-          cpus: '0.20'
+          memory: 512m
+          cpus: '0.30'
     image: mongo:latest
     container_name: mongodb
     restart: always

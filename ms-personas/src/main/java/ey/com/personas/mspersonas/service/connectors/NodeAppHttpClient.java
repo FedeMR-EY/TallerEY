@@ -4,6 +4,7 @@ import ey.com.personas.mspersonas.dto.api.renaper.RenaperResponse;
 import ey.com.personas.mspersonas.dto.api.veraz.VerazResponse;
 import ey.com.personas.mspersonas.dto.api.worldsys.WorldSysResponse;
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class NodeAppHttpClient {
     this.restTemplate = restTemplate;
   }
 
-  public VerazResponse getVerazDetails(String dni) {
+  public CompletableFuture<VerazResponse> getVerazDetails(String dni) {
     try {
 
       MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -33,9 +34,8 @@ public class NodeAppHttpClient {
 
       log.info("URI consultada: {}", uri);
 
-      var response = restTemplate.getForEntity(uri, VerazResponse.class);
-
-      return response.getBody();
+      var response = restTemplate.getForObject(uri, VerazResponse.class);
+      return CompletableFuture.completedFuture(response);
     } catch (ResourceAccessException e) {
       log.error("Error de acceso al recurso: {} - Causa: {}", e.getMessage(), e.getCause());
       throw new RuntimeException("No se pudo acceder al servicio Veraz", e);
@@ -48,7 +48,7 @@ public class NodeAppHttpClient {
     }
   }
 
-  public RenaperResponse getRenaperDetails(String dni) {
+  public CompletableFuture<RenaperResponse> getRenaperDetails(String dni) {
     try {
 
       MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -58,9 +58,8 @@ public class NodeAppHttpClient {
 
       log.info("URI consultada: {}", uri);
 
-      var response = restTemplate.getForEntity(uri, RenaperResponse.class);
-
-      return response.getBody();
+      var response = restTemplate.getForObject(uri, RenaperResponse.class);
+      return CompletableFuture.completedFuture(response);
     } catch (ResourceAccessException e) {
       log.error("Error de acceso al recurso: {}", e.getMessage());
       throw new RuntimeException("No se pudo acceder al servicio Renaper", e);
@@ -73,7 +72,7 @@ public class NodeAppHttpClient {
     }
   }
 
-  public WorldSysResponse getWorldSysDetails(String dni) {
+  public CompletableFuture<WorldSysResponse> getWorldSysDetails(String dni) {
     try {
 
       MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -83,9 +82,8 @@ public class NodeAppHttpClient {
 
       log.info("URI consultada: {}", uri);
 
-      var response = restTemplate.getForEntity(uri, WorldSysResponse.class);
-
-      return response.getBody();
+      var response = restTemplate.getForObject(uri, WorldSysResponse.class);
+      return CompletableFuture.completedFuture(response);
     } catch (ResourceAccessException e) {
       log.error("Error de acceso al recurso: {}", e.getMessage());
       throw new RuntimeException("No se pudo acceder al servicio WorldSys", e);

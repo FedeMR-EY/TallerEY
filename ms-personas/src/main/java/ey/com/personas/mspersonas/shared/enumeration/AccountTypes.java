@@ -27,7 +27,7 @@ public enum AccountTypes {
     // Recorrer los tipos de cuentas para encontrar la más adecuada
     for (AccountTypes tipo : AccountTypes.values()) {
       if (tipo != NO_ELIGIBLE
-          && verazScore <= tipo.getVerazScore()
+          && verazScore >= tipo.getVerazScore()
           && !worldSysFlag.equals(true)
           && sueldoBruto >= tipo.getSueldoBrutoMin()) {
         return tipo;

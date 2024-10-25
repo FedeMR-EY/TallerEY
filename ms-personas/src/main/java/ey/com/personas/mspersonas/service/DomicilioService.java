@@ -21,7 +21,7 @@ public class DomicilioService implements JpaService<Object> {
 
   @Override
   public Object save(Object entity) {
-    return null;
+    return domicilioRepository.save((Domicilio) entity);
   }
 
   @Override

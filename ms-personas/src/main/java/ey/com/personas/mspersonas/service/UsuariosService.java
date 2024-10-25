@@ -4,9 +4,11 @@ import ey.com.personas.mspersonas.model.Usuarios;
 import ey.com.personas.mspersonas.repository.UsuariosRepository;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class UsuariosService implements JpaService<Object> {
   private final UsuariosRepository usuariosRepository;
@@ -22,7 +24,10 @@ public class UsuariosService implements JpaService<Object> {
 
   @Override
   public Object save(Object entity) {
-    return usuariosRepository.save((Usuarios) entity).getPersnum();
+    var newUser = (Usuarios) entity;
+    log.info("usuario a guardar: {}", newUser);
+    log.info("estado usuario: {}", newUser.getEstado());
+    return usuariosRepository.save(newUser).getPersnum();
   }
 
   @Override

@@ -7,11 +7,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "resumen_emitidos")
+@ToString
 public class ResumenEmitido implements Serializable {
 
   @Serial private static final long serialVersionUID = 5748200324149063314L;

@@ -5,7 +5,9 @@ import ey.com.cuentas.mscuentas.dto.CreateAccountMessageResponse;
 import ey.com.cuentas.mscuentas.model.CodigoMoneda;
 import ey.com.cuentas.mscuentas.model.Cuentas;
 import ey.com.cuentas.mscuentas.model.EstadoCuenta;
+import ey.com.cuentas.mscuentas.service.CodigoMonedaService;
 import ey.com.cuentas.mscuentas.service.CuentasService;
+import ey.com.cuentas.mscuentas.service.EstadoCuentaService;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +21,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class CuentasBusinessService {
   private final CuentasService cuentasService;
+  private final CodigoMonedaService codigoMonedaService;
+  private final EstadoCuentaService estadoCuentaService;
 
   @Autowired
-  public CuentasBusinessService(CuentasService cuentasService) {
+  public CuentasBusinessService(
+      CuentasService cuentasService,
+      CodigoMonedaService codigoMonedaService,
+      EstadoCuentaService estadoCuentaService) {
     this.cuentasService = cuentasService;
+    this.codigoMonedaService = codigoMonedaService;
+    this.estadoCuentaService = estadoCuentaService;
   }
 
   public Optional<CreateAccountMessageResponse> createAcocunt(
@@ -31,18 +40,16 @@ public class CuentasBusinessService {
       switch (createAccountMessage.accountType()) {
         case BASIC -> {
           var cuentaPesos = new Cuentas();
-          var codigoMoneda = new CodigoMoneda();
-          var estadoCuenta = new EstadoCuenta();
+          var codigoMoneda = (Optional<CodigoMoneda>) codigoMonedaService.findById(6);
+          var estadoCuenta = (Optional<EstadoCuenta>) estadoCuentaService.findById(1);
           var randomNumber = new Random().nextInt(9000000);
 
-          codigoMoneda.setSimbolo("ARS");
-          codigoMoneda.setPais("Argentina");
+          log.info("codigoMoneda: {}", codigoMoneda);
+          log.info("estadoCuenta: {}", estadoCuenta);
 
-          estadoCuenta.setDetalle("Activa");
-
-          cuentaPesos.setDivisa(codigoMoneda);
+          cuentaPesos.setDivisa(codigoMoneda.get());
           cuentaPesos.setSaldo(BigDecimal.valueOf(createAccountMessage.request().sueldoBruto()));
-          cuentaPesos.setEstado(estadoCuenta);
+          cuentaPesos.setEstado(estadoCuenta.get());
           cuentaPesos.setPersnum(createAccountMessage.personNumber());
           cuentaPesos.setNumcuenta(String.valueOf(randomNumber));
 
@@ -53,36 +60,26 @@ public class CuentasBusinessService {
         }
         case BASIC_PLUS_CARD, PREMIUM_GOLD, PREMIUM_BLACK -> {
           var cuentaPesos = new Cuentas();
-          var codigoMoneda = new CodigoMoneda();
-          var estadoCuenta = new EstadoCuenta();
+          var codigoMoneda = (Optional<CodigoMoneda>) codigoMonedaService.findById(6);
+          var estadoCuenta = (Optional<EstadoCuenta>) estadoCuentaService.findById(1);
           var randomNumber = new Random().nextInt(9000000);
 
-          codigoMoneda.setSimbolo("ARS");
-          codigoMoneda.setPais("Argentina");
-
-          estadoCuenta.setDetalle("Activa");
-
-          cuentaPesos.setDivisa(codigoMoneda);
+          cuentaPesos.setDivisa(codigoMoneda.get());
           cuentaPesos.setSaldo(BigDecimal.valueOf(createAccountMessage.request().sueldoBruto()));
-          cuentaPesos.setEstado(estadoCuenta);
+          cuentaPesos.setEstado(estadoCuenta.get());
           cuentaPesos.setPersnum(createAccountMessage.personNumber());
           cuentaPesos.setNumcuenta(String.valueOf(randomNumber));
 
           var numCuentaPesos = (String) cuentasService.save(cuentaPesos);
 
           var cuentaDolares = new Cuentas();
-          var codigoMonedaDolar = new CodigoMoneda();
-          var estadoCuentaDolar = new EstadoCuenta();
+          var codigoMonedaDolar = (Optional<CodigoMoneda>) codigoMonedaService.findById(1);
+          var estadoCuentaDolar = (Optional<EstadoCuenta>) estadoCuentaService.findById(1);
           var randomNumberDolar = new Random().nextInt(90000000);
 
-          codigoMonedaDolar.setSimbolo("USD");
-          codigoMonedaDolar.setPais("Estados Unidos");
-
-          estadoCuentaDolar.setDetalle("Activa");
-
-          cuentaDolares.setDivisa(codigoMoneda);
+          cuentaDolares.setDivisa(codigoMonedaDolar.get());
           cuentaDolares.setSaldo(BigDecimal.valueOf(createAccountMessage.request().sueldoBruto()));
-          cuentaDolares.setEstado(estadoCuenta);
+          cuentaDolares.setEstado(estadoCuentaDolar.get());
           cuentaDolares.setPersnum(createAccountMessage.personNumber());
           cuentaDolares.setNumcuenta(String.valueOf(randomNumberDolar));
 
@@ -94,6 +91,7 @@ public class CuentasBusinessService {
         }
       }
     } catch (Exception e) {
+      log.error("Ocurrio un error al crear una cuenta: {}", (Object) e);
       return Optional.of(
           new CreateAccountMessageResponse(createAccountMessage.uuid(), false, null));
     }

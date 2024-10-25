@@ -26,6 +26,6 @@ public class EstadoTarjetaService implements JpaService<Object> {
 
   @Override
   public Object findById(Object id) {
-    return null;
+    return estadoTarjetaRepository.findById((Integer) id);
   }
 }
