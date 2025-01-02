@@ -32,7 +32,7 @@ public class PersonasConsumer {
           objectMapper.readValue(consumerRecord.value(), CreateAccountMessageResponse.class);
 
       var pendingResponse = pendingResponses.get(createAccountMessageResponse.uuid());
-      if (pendingResponse != null) {
+      if (pendingResponse != null && !pendingResponse.isDone()) {
         if (createAccountMessageResponse.created()) {
           pendingResponse.complete(true);
         } else {
